@@ -1,140 +1,311 @@
-
-<div id="autoParts">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Auto Parts Finder</title>
   <style>
-    #autoParts{font-family:Arial,sans-serif;max-width:1000px;margin:20px auto}
-    #autoParts select{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc}
-    #autoParts .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    #autoParts h3{margin-bottom:10px}
+    :root { font-family: system-ui, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7fb; color:#111; }
+    .wrap { max-width: 980px; margin: 24px auto; padding: 0 14px; }
+    .card { background:#fff; border-radius: 14px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,.08); }
+    h1 { margin:0 0 6px; font-size: 22px; }
+    .sub { margin:0 0 14px; color:#555; font-size: 14px; }
+    .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin: 10px 0 14px; }
+    .btn {
+      display:inline-block; padding:10px 14px; border-radius:10px; border:0;
+      font-size: 14px; cursor:pointer; text-decoration:none;
+    }
+    .btn-dark { background:#111; color:#fff; }
+    .btn-light { background:#eef1f8; color:#111; }
+    .grid { display:grid; gap:12px; grid-template-columns: repeat(12, 1fr); }
+    .field { grid-column: span 12; }
+    @media (min-width: 860px){
+      .col-3 { grid-column: span 3; }
+      .col-4 { grid-column: span 4; }
+      .col-6 { grid-column: span 6; }
+    }
+    label { display:block; font-size:13px; margin: 0 0 6px; color:#333; }
+    select, input {
+      width: 100%; padding: 10px 12px; border-radius: 10px;
+      border:1px solid #d7dbe7; background:#fff; font-size:14px; outline:none;
+    }
+    select:disabled, input:disabled { background:#f1f3f8; color:#777; }
+    .hint { font-size:12px; color:#666; margin-top:6px; }
+    .error { color:#b00020; font-size:12px; margin-top:10px; }
+    .ok { color:#0a7a2f; font-size:12px; margin-top:10px; }
   </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Auto Parts Finder</h1>
+      <div class="sub">Select Year → Make → Model. Add engine size if you know it. Then press Research.</div>
 
-  <h3>Auto Parts Search</h3>
+      <!-- IMPORTANT: replace WP_HOME_URL + WP_SEARCH_URL with your real WordPress URLs -->
+      <div class="bar">
+        <a class="btn btn-dark" id="backBtn" href="#" target="_top" rel="noopener">⬅ Back to Website</a>
+        <span class="hint" id="status">Loading…</span>
+      </div>
 
-  <div class="grid">
-    <select id="year"><option value="">Year</option></select>
-    <select id="make"><option value="">Make</option></select>
-    <select id="model"><option value="">Model</option></select>
-    <select id="engine"><option value="">Engine</option></select>
+      <form id="form" class="grid" autocomplete="off">
+        <div class="field col-3">
+          <label for="year">Year</label>
+          <select id="year"></select>
+        </div>
+
+        <div class="field col-3">
+          <label for="make">Make</label>
+          <select id="make" disabled>
+            <option value="">Select make</option>
+          </select>
+          <div class="hint">Auto-loaded for the selected year.</div>
+        </div>
+
+        <div class="field col-3">
+          <label for="model">Model</label>
+          <select id="model" disabled>
+            <option value="">Select model</option>
+          </select>
+          <div class="hint">Auto-loaded for the selected year + make.</div>
+        </div>
+
+        <div class="field col-3">
+          <label for="engine">Engine size</label>
+          <input id="engine" placeholder="Example: 2.4L, 3.5L, 2.0T, Hybrid, Electric" />
+          <div class="hint">Typed because engine data isn’t consistent for all vehicles.</div>
+        </div>
+
+        <div class="field col-4">
+          <label for="part">Part</label>
+          <select id="part">
+            <option value="">Select part</option>
+            <option>Brake Pads</option><option>Brake Rotors</option><option>Alternator</option>
+            <option>Starter</option><option>Battery</option><option>Radiator</option>
+            <option>Water Pump</option><option>Spark Plugs</option><option>Ignition Coils</option>
+            <option>Oil Filter</option><option>Air Filter</option><option>Cabin Filter</option>
+            <option>Headlight Bulb</option><option>Wiper Blades</option><option>Control Arm</option>
+            <option>Wheel Bearing</option><option>Oxygen Sensor</option>
+          </select>
+        </div>
+
+        <div class="field col-6">
+          <label for="keyword">Extra notes (optional)</label>
+          <input id="keyword" placeholder="Example: front, rear, left, right, OEM, ceramic…" />
+        </div>
+
+        <div class="field col-2">
+          <label>&nbsp;</label>
+          <button class="btn btn-dark" type="submit" style="width:100%;">Research</button>
+        </div>
+
+        <div class="field">
+          <button class="btn btn-light" type="button" id="resetBtn">Reset</button>
+          <div id="msg" class="error" aria-live="polite"></div>
+          <div id="ok" class="ok" aria-live="polite"></div>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script>
-    // Years
-    const yearEl=document.getElementById("year");
-    for(let y=2026;y>=2006;y--){
-      yearEl.innerHTML+=`<option>${y}</option>`;
+    // ===============================
+    // 1) SET YOUR WORDPRESS LINKS HERE
+    // ===============================
+    const WP_HOME_URL   = "https://YOUR-WORDPRESS-SITE.com/";      // Back button goes here
+    const WP_SEARCH_URL = "https://YOUR-WORDPRESS-SITE.com/shop/"; // Research button goes here (Shop/Parts page)
+
+    // WooCommerce search pattern (most common):
+    // It will redirect to:  WP_SEARCH_URL + "?s=...&post_type=product"
+    // If your store uses a different search URL, change buildRedirectUrl() below.
+
+    // ===============================
+    // 2) ELEMENTS
+    // ===============================
+    const yearEl = document.getElementById("year");
+    const makeEl = document.getElementById("make");
+    const modelEl = document.getElementById("model");
+    const engineEl = document.getElementById("engine");
+    const partEl = document.getElementById("part");
+    const keywordEl = document.getElementById("keyword");
+    const form = document.getElementById("form");
+    const resetBtn = document.getElementById("resetBtn");
+    const msgEl = document.getElementById("msg");
+    const okEl = document.getElementById("ok");
+    const statusEl = document.getElementById("status");
+    const backBtn = document.getElementById("backBtn");
+
+    backBtn.href = WP_HOME_URL;
+
+    function setError(t){ msgEl.textContent = t; okEl.textContent=""; }
+    function setOk(t){ okEl.textContent = t; msgEl.textContent=""; }
+    function clearMsgs(){ msgEl.textContent=""; okEl.textContent=""; }
+
+    function setYearOptions(){
+      yearEl.innerHTML = `<option value="">Select year</option>`;
+      for (let y = 2026; y >= 2006; y--) {
+        yearEl.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+    }
+    setYearOptions();
+
+    function disableAndReset(el, placeholder){
+      el.disabled = true;
+      el.innerHTML = `<option value="">${placeholder}</option>`;
     }
 
-    const VEHICLES={
-      "BMW":{
-        "3 Series":["2.0L","2.5L","3.0L"],
-        "5 Series":["2.0L","3.0L","4.4L"],
-        "X3":["2.0L","3.0L"],
-        "X5":["3.0L","4.4L"]
-      },
-      "Audi":{
-        "A4":["2.0T","3.2L"],
-        "A6":["2.0T","3.0T"],
-        "Q5":["2.0T","3.0T"],
-        "Q7":["3.0T","4.2L"]
-      },
-      "Honda":{
-        "Civic":["1.8L","2.0L","1.5T"],
-        "Accord":["2.4L","2.0T","3.5L"],
-        "CR-V":["2.4L","1.5T"]
-      },
-      "Toyota":{
-        "Camry":["2.4L","2.5L","3.5L"],
-        "Corolla":["1.8L","2.0L"],
-        "RAV4":["2.5L","Hybrid"]
-      },
-      "Ford":{
-        "F-150":["3.3L","3.5L","5.0L"],
-        "Escape":["1.5L","2.0L"],
-        "Fusion":["2.5L","2.0T"]
-      },
-      "Chevy":{
-        "Silverado":["4.3L","5.3L","6.2L"],
-        "Malibu":["1.5T","2.0T"],
-        "Equinox":["1.5T","2.0T"]
-      },
-      "GMC":{
-        "Sierra":["4.3L","5.3L","6.2L"],
-        "Terrain":["1.5T","2.0T"]
-      },
-      "Hyundai":{
-        "Elantra":["2.0L","1.6T"],
-        "Sonata":["2.5L","1.6T"],
-        "Tucson":["2.5L","Hybrid"]
-      },
-      "Kia":{
-        "Optima":["2.4L","1.6T"],
-        "Sorento":["2.5L","3.5L"],
-        "Sportage":["2.4L","2.5L"]
-      },
-      "Volvo":{
-        "XC60":["2.0T","Hybrid"],
-        "XC90":["2.0T","Hybrid"],
-        "S60":["2.0T"]
-      },
-      "Mazda":{
-        "Mazda3":["2.0L","2.5L"],
-        "CX-5":["2.5L","2.5T"]
-      },
-      "Subaru":{
-        "Impreza":["2.0L"],
-        "Outback":["2.5L","3.6L"],
-        "Forester":["2.5L"]
-      },
-      "Lexus":{
-        "ES":["2.5L","3.5L"],
-        "RX":["3.5L","Hybrid"]
-      },
-      "Mini":{
-        "Cooper":["1.5T","2.0T"],
-        "Countryman":["1.6T","2.0T"]
-      },
-      "Nissan":{
-        "Altima":["2.5L","2.0T"],
-        "Rogue":["2.5L"],
-        "Sentra":["2.0L"]
-      },
-      "Infiniti":{
-        "Q50":["3.0T"],
-        "QX60":["3.5L"]
-      },
-      "Tesla":{
-        "Model 3":["Electric"],
-        "Model Y":["Electric"],
-        "Model S":["Electric"]
-      },
-      "Jeep":{
-        "Wrangler":["3.6L","2.0T"],
-        "Grand Cherokee":["3.6L","5.7L"]
+    // ===============================
+    // 3) NHTSA vPIC API HELPERS
+    // ===============================
+    async function fetchJson(url){
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Network error");
+      return await res.json();
+    }
+
+    // Makes for a given year
+    async function loadMakes(year){
+      statusEl.textContent = "Loading makes…";
+      const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleModelYear/modelyear/${encodeURIComponent(year)}?format=json`;
+      const data = await fetchJson(url);
+      const makes = (data.Results || [])
+        .map(x => x.MakeName)
+        .filter(Boolean)
+        .sort((a,b)=>a.localeCompare(b));
+      statusEl.textContent = makes.length ? `Makes loaded (${makes.length}).` : "No makes found.";
+      return makes;
+    }
+
+    // Models for a given make+year
+    async function loadModels(year, make){
+      statusEl.textContent = "Loading models…";
+      const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${encodeURIComponent(year)}?format=json`;
+      const data = await fetchJson(url);
+      const models = (data.Results || [])
+        .map(x => x.Model_Name)
+        .filter(Boolean)
+        .sort((a,b)=>a.localeCompare(b));
+      statusEl.textContent = models.length ? `Models loaded (${models.length}).` : "No models found.";
+      return models;
+    }
+
+    function setOptions(selectEl, options, placeholder){
+      selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+      options.forEach(v => {
+        selectEl.innerHTML += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`;
+      });
+      selectEl.disabled = false;
+    }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+      }[m]));
+    }
+
+    // ===============================
+    // 4) EVENTS: Year -> Make -> Model
+    // ===============================
+    yearEl.addEventListener("change", async () => {
+      clearMsgs();
+      const year = yearEl.value;
+
+      disableAndReset(makeEl, "Select make");
+      disableAndReset(modelEl, "Select model");
+
+      if (!year) { statusEl.textContent = "Select a year."; return; }
+
+      try {
+        const makes = await loadMakes(year);
+        if (!makes.length) { setError("No makes found for this year."); return; }
+        setOptions(makeEl, makes, "Select make");
+      } catch (e){
+        setError("Could not load makes. Check internet connection, then refresh.");
+        statusEl.textContent = "Error loading makes.";
       }
-    };
-
-    const makeEl=document.getElementById("make");
-    const modelEl=document.getElementById("model");
-    const engineEl=document.getElementById("engine");
-
-    Object.keys(VEHICLES).forEach(m=>{
-      makeEl.innerHTML+=`<option>${m}</option>`;
     });
 
-    makeEl.onchange=()=>{
-      modelEl.innerHTML="<option>Model</option>";
-      engineEl.innerHTML="<option>Engine</option>";
-      if(!makeEl.value)return;
-      Object.keys(VEHICLES[makeEl.value]).forEach(md=>{
-        modelEl.innerHTML+=`<option>${md}</option>`;
-      });
-    };
+    makeEl.addEventListener("change", async () => {
+      clearMsgs();
+      const year = yearEl.value;
+      const make = makeEl.value;
 
-    modelEl.onchange=()=>{
-      engineEl.innerHTML="<option>Engine</option>";
-      if(!modelEl.value)return;
-      VEHICLES[makeEl.value][modelEl.value].forEach(e=>{
-        engineEl.innerHTML+=`<option>${e}</option>`;
-      });
-    };
+      disableAndReset(modelEl, "Select model");
+
+      if (!year || !make) { statusEl.textContent = "Select make."; return; }
+
+      try {
+        const models = await loadModels(year, make);
+        if (!models.length) { setError("No models found for this make/year."); return; }
+        setOptions(modelEl, models, "Select model");
+      } catch (e){
+        setError("Could not load models. Check internet connection, then refresh.");
+        statusEl.textContent = "Error loading models.";
+      }
+    });
+
+    // ===============================
+    // 5) RESEARCH BUTTON (redirect to WordPress)
+    // ===============================
+    function buildRedirectUrl({year, make, model, engine, part, keyword}){
+      // Build a search phrase that WooCommerce can find
+      const phraseParts = [part, year, make, model, engine, keyword].filter(Boolean);
+      const phrase = phraseParts.join(" ").trim();
+
+      // Default WooCommerce product search URL
+      const u = new URL(WP_SEARCH_URL);
+      u.searchParams.set("s", phrase);
+      u.searchParams.set("post_type", "product");
+
+      // Also include structured params (optional)
+      u.searchParams.set("year", year);
+      u.searchParams.set("make", make);
+      u.searchParams.set("model", model);
+      if (engine) u.searchParams.set("engine", engine);
+      if (part) u.searchParams.set("part", part);
+      if (keyword) u.searchParams.set("q", keyword);
+
+      return u.toString();
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      clearMsgs();
+
+      const year = yearEl.value;
+      const make = makeEl.value;
+      const model = modelEl.value;
+      const engine = engineEl.value.trim();
+      const part = partEl.value;
+      const keyword = keywordEl.value.trim();
+
+      if (!year || !make || !model){
+        setError("Please select Year, Make, and Model.");
+        return;
+      }
+      if (!part && !keyword){
+        setError("Please select a Part or type extra notes.");
+        return;
+      }
+
+      const url = buildRedirectUrl({year, make, model, engine, part, keyword});
+      setOk("Redirecting to your store search…");
+      window.top.location.href = url; // important for iframe
+    });
+
+    resetBtn.addEventListener("click", () => {
+      clearMsgs();
+      yearEl.value = "";
+      disableAndReset(makeEl, "Select make");
+      disableAndReset(modelEl, "Select model");
+      engineEl.value = "";
+      partEl.value = "";
+      keywordEl.value = "";
+      statusEl.textContent = "Select a year.";
+    });
+
+    statusEl.textContent = "Select a year.";
   </script>
-</div>
+</body>
+</html>
+
