@@ -1,0 +1,139 @@
+<div id="autoParts">
+  <style>
+    #autoParts{font-family:Arial,sans-serif;max-width:1000px;margin:20px auto}
+    #autoParts select{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc}
+    #autoParts .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    #autoParts h3{margin-bottom:10px}
+  </style>
+
+  <h3>Auto Parts Search</h3>
+
+  <div class="grid">
+    <select id="year"><option value="">Year</option></select>
+    <select id="make"><option value="">Make</option></select>
+    <select id="model"><option value="">Model</option></select>
+    <select id="engine"><option value="">Engine</option></select>
+  </div>
+
+  <script>
+    // Years
+    const yearEl=document.getElementById("year");
+    for(let y=2026;y>=2006;y--){
+      yearEl.innerHTML+=`<option>${y}</option>`;
+    }
+
+    const VEHICLES={
+      "BMW":{
+        "3 Series":["2.0L","2.5L","3.0L"],
+        "5 Series":["2.0L","3.0L","4.4L"],
+        "X3":["2.0L","3.0L"],
+        "X5":["3.0L","4.4L"]
+      },
+      "Audi":{
+        "A4":["2.0T","3.2L"],
+        "A6":["2.0T","3.0T"],
+        "Q5":["2.0T","3.0T"],
+        "Q7":["3.0T","4.2L"]
+      },
+      "Honda":{
+        "Civic":["1.8L","2.0L","1.5T"],
+        "Accord":["2.4L","2.0T","3.5L"],
+        "CR-V":["2.4L","1.5T"]
+      },
+      "Toyota":{
+        "Camry":["2.4L","2.5L","3.5L"],
+        "Corolla":["1.8L","2.0L"],
+        "RAV4":["2.5L","Hybrid"]
+      },
+      "Ford":{
+        "F-150":["3.3L","3.5L","5.0L"],
+        "Escape":["1.5L","2.0L"],
+        "Fusion":["2.5L","2.0T"]
+      },
+      "Chevy":{
+        "Silverado":["4.3L","5.3L","6.2L"],
+        "Malibu":["1.5T","2.0T"],
+        "Equinox":["1.5T","2.0T"]
+      },
+      "GMC":{
+        "Sierra":["4.3L","5.3L","6.2L"],
+        "Terrain":["1.5T","2.0T"]
+      },
+      "Hyundai":{
+        "Elantra":["2.0L","1.6T"],
+        "Sonata":["2.5L","1.6T"],
+        "Tucson":["2.5L","Hybrid"]
+      },
+      "Kia":{
+        "Optima":["2.4L","1.6T"],
+        "Sorento":["2.5L","3.5L"],
+        "Sportage":["2.4L","2.5L"]
+      },
+      "Volvo":{
+        "XC60":["2.0T","Hybrid"],
+        "XC90":["2.0T","Hybrid"],
+        "S60":["2.0T"]
+      },
+      "Mazda":{
+        "Mazda3":["2.0L","2.5L"],
+        "CX-5":["2.5L","2.5T"]
+      },
+      "Subaru":{
+        "Impreza":["2.0L"],
+        "Outback":["2.5L","3.6L"],
+        "Forester":["2.5L"]
+      },
+      "Lexus":{
+        "ES":["2.5L","3.5L"],
+        "RX":["3.5L","Hybrid"]
+      },
+      "Mini":{
+        "Cooper":["1.5T","2.0T"],
+        "Countryman":["1.6T","2.0T"]
+      },
+      "Nissan":{
+        "Altima":["2.5L","2.0T"],
+        "Rogue":["2.5L"],
+        "Sentra":["2.0L"]
+      },
+      "Infiniti":{
+        "Q50":["3.0T"],
+        "QX60":["3.5L"]
+      },
+      "Tesla":{
+        "Model 3":["Electric"],
+        "Model Y":["Electric"],
+        "Model S":["Electric"]
+      },
+      "Jeep":{
+        "Wrangler":["3.6L","2.0T"],
+        "Grand Cherokee":["3.6L","5.7L"]
+      }
+    };
+
+    const makeEl=document.getElementById("make");
+    const modelEl=document.getElementById("model");
+    const engineEl=document.getElementById("engine");
+
+    Object.keys(VEHICLES).forEach(m=>{
+      makeEl.innerHTML+=`<option>${m}</option>`;
+    });
+
+    makeEl.onchange=()=>{
+      modelEl.innerHTML="<option>Model</option>";
+      engineEl.innerHTML="<option>Engine</option>";
+      if(!makeEl.value)return;
+      Object.keys(VEHICLES[makeEl.value]).forEach(md=>{
+        modelEl.innerHTML+=`<option>${md}</option>`;
+      });
+    };
+
+    modelEl.onchange=()=>{
+      engineEl.innerHTML="<option>Engine</option>";
+      if(!modelEl.value)return;
+      VEHICLES[makeEl.value][modelEl.value].forEach(e=>{
+        engineEl.innerHTML+=`<option>${e}</option>`;
+      });
+    };
+  </script>
+</div>
