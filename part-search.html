@@ -103,9 +103,30 @@ for(let y=2026;y>=2006;y--)yearEl.innerHTML+=`<option>${y}</option>`;
 
 /* LOAD ALL MAKES (STABLE) */
 async function loadMakes(){
- const r=await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetAllMakes?format=json");
- const j=await r.json();
- return j.Results.map(x=>x.Make_Name).sort();
+  statusEl.textContent = "Loading vehicle makes…";
+
+  // Vehicle types we WANT
+  const allowedTypes = [
+    "Passenger Car",
+    "Multipurpose Passenger Vehicle (MPV)",
+    "Truck",
+    "Incomplete Vehicle"
+  ];
+
+  const r = await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetAllMakes?format=json");
+  const j = await r.json();
+
+  // Filter to auto-related makes only
+  const autoMakes = j.Results
+    .filter(m =>
+      m.VehicleTypes &&
+      m.VehicleTypes.some(vt => allowedTypes.includes(vt.Name))
+    )
+    .map(m => m.Make_Name)
+    .sort((a,b)=>a.localeCompare(b));
+
+  statusEl.textContent = `Auto makes loaded (${autoMakes.length})`;
+  return autoMakes;
 }
 
 /* LOAD MODELS */
