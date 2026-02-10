@@ -106,33 +106,41 @@ async function loadMakes(){
   statusEl.textContent = "Loading vehicle makes…";
 
   // Vehicle types we WANT
-  const allowedTypes = [
-    "Passenger Car",
-    "Multipurpose Passenger Vehicle (MPV)",
-    "Truck",
-    "Incomplete Vehicle"
-  ];
-  const r = await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetAllMakes?format=json");
+ async function fetchMakesForType(typeName){
+  const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/${encodeURIComponent(typeName)}?format=json`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error("Failed: " + typeName);
   const j = await r.json();
-
-  // Filter to auto-related makes only
-  const autoMakes = j.Results
-    .filter(m =>
-      m.VehicleTypes &&
-      m.VehicleTypes.some(vt => allowedTypes.includes(vt.Name))
-    )
-    .map(m => m.Make_Name)
-    .sort((a,b)=>a.localeCompare(b));
-
-  statusEl.textContent = `Auto makes loaded (${autoMakes.length})`;
-  return autoMakes;
+  return (j.Results || []).map(x => x.MakeName).filter(Boolean);
 }
 
-/* LOAD MODELS */
-async function loadModels(year,make){
- const r=await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${make}/modelyear/${year}?format=json`);
- const j=await r.json();
- return j.Results.map(x=>x.Model_Name).sort();
+async function loadMakes(){
+  statusEl.textContent = "Loading auto makes…";
+
+  // Auto-only vehicle types
+  const types = [
+    "Passenger Car",
+    "Truck",
+    "Multipurpose Passenger Vehicle (MPV)"
+  ];
+
+  try {
+    // Fetch all types in parallel
+    const lists = await Promise.all(types.map(fetchMakesForType));
+
+    // Merge + unique + sort
+    const set = new Set();
+    lists.flat().forEach(m => set.add(m));
+
+    const makes = Array.from(set).sort((a,b)=>a.localeCompare(b));
+    statusEl.textContent = `Auto makes loaded (${makes.length})`;
+    return makes;
+
+  } catch (e) {
+    statusEl.textContent = "Error loading makes.";
+    alert("Could not load makes. Please refresh and try again.");
+    return [];
+  }
 }
 
 /* EVENTS */
