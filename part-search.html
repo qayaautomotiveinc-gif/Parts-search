@@ -112,7 +112,6 @@ async function loadMakes(){
     "Truck",
     "Incomplete Vehicle"
   ];
-
   const r = await fetch("https://vpic.nhtsa.dot.gov/api/vehicles/GetAllMakes?format=json");
   const j = await r.json();
 
