@@ -178,20 +178,17 @@
     }
 
     // Makes for a given year
-    async function loadMakes(){
-  statusEl.textContent = "Loading makes…";
-  const url = "https://vpic.nhtsa.dot.gov/api/vehicles/GetAllMakes?format=json";
-  const data = await fetchJson(url);
-
-  const makes = (data.Results || [])
-    .map(x => x.Make_Name)
-    .filter(Boolean)
-    .sort((a,b)=>a.localeCompare(b));
-
-  statusEl.textContent = `Makes loaded (${makes.length}).`;
-  return makes;
-}
-    // Models for a given make+year
+    async function loadMakes(year){
+      statusEl.textContent = "Loading makes…";
+      const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleModelYear/modelyear/${encodeURIComponent(year)}?format=json`;
+      const data = await fetchJson(url);
+      const makes = (data.Results || [])
+        .map(x => x.MakeName)
+        .filter(Boolean)
+        .sort((a,b)=>a.localeCompare(b));
+      statusEl.textContent = makes.length ? `Makes loaded (${makes.length}).` : "No makes found.";
+      return makes;  
+      // Models for a given make+year
     async function loadModels(year, make){
       statusEl.textContent = "Loading models…";
       const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${encodeURIComponent(year)}?format=json`;
