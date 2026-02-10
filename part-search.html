@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Auto Parts Finder</title>
-<div id="backBar" style="margin:16px 0;">
+  <div style="margin:14px 0;display:flex;gap:12px;align-items:center;">
   <button
     type="button"
-    onclick="window.top.location.href='https://qayaautomotiveinc.WORDPRESS.com/'"
+    onclick="window.top.location.href='https://YOUR-WORDPRESS-SITE.com/'"
     style="
       padding:10px 16px;
       border-radius:10px;
@@ -17,9 +17,10 @@
       font-size:14px;
       cursor:pointer;
     ">
-    ⬅ Search
+    ⬅ Back to Website
   </button>
-</div>    :root { font-family: system-ui, Arial, sans-serif; }
+</div>  <style>
+    :root { font-family: system-ui, Arial, sans-serif; }
     body { margin: 0; background: #f6f7fb; color:#111; }
     .wrap { max-width: 980px; margin: 24px auto; padding: 0 14px; }
     .card { background:#fff; border-radius: 14px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,.08); }
@@ -178,17 +179,20 @@
     }
 
     // Makes for a given year
-    async function loadMakes(year){
-      statusEl.textContent = "Loading makes…";
-      const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleModelYear/modelyear/${encodeURIComponent(year)}?format=json`;
-      const data = await fetchJson(url);
-      const makes = (data.Results || [])
-        .map(x => x.MakeName)
-        .filter(Boolean)
-        .sort((a,b)=>a.localeCompare(b));
-      statusEl.textContent = makes.length ? `Makes loaded (${makes.length}).` : "No makes found.";
-      return makes;  
-      // Models for a given make+year
+    async function loadMakes(){
+  statusEl.textContent = "Loading makes…";
+  const url = "https://vpic.nhtsa.dot.gov/api/vehicles/GetAllMakes?format=json";
+  const data = await fetchJson(url);
+
+  const makes = (data.Results || [])
+    .map(x => x.Make_Name)
+    .filter(Boolean)
+    .sort((a,b)=>a.localeCompare(b));
+
+  statusEl.textContent = `Makes loaded (${makes.length}).`;
+  return makes;
+}
+    // Models for a given make+year
     async function loadModels(year, make){
       statusEl.textContent = "Loading models…";
       const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/${encodeURIComponent(make)}/modelyear/${encodeURIComponent(year)}?format=json`;
@@ -320,4 +324,3 @@
   </script>
 </body>
 </html>
-
