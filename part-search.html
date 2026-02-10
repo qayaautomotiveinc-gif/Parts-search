@@ -126,8 +126,8 @@
     // ===============================
     // 1) SET YOUR WORDPRESS LINKS HERE
     // ===============================
-    const WP_HOME_URL   = "https://YOUR-WORDPRESS-SITE.com/";      // Back button goes here
-    const WP_SEARCH_URL = "https://YOUR-WORDPRESS-SITE.com/shop/"; // Research button goes here (Shop/Parts page)
+    const WP_HOME_URL   = "https://qayaautomotiveinc.wordpress.com/";      // Back button goes here
+    const WP_SEARCH_URL = "https://qayaautomotiveinc.wordpress.com/shop/"; // Research button goes here (Shop/Parts page)
 
     // WooCommerce search pattern (most common):
     // It will redirect to:  WP_SEARCH_URL + "?s=...&post_type=product"
@@ -178,18 +178,19 @@
     }
 
     // Makes for a given year
-    async function loadMakes(year){
-      statusEl.textContent = "Loading makes…";
-      const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleModelYear/modelyear/${encodeURIComponent(year)}?format=json`;
-      const data = await fetchJson(url);
-      const makes = (data.Results || [])
-        .map(x => x.MakeName)
-        .filter(Boolean)
-        .sort((a,b)=>a.localeCompare(b));
-      statusEl.textContent = makes.length ? `Makes loaded (${makes.length}).` : "No makes found.";
-      return makes;
-    }
+    async function loadMakes(){
+  statusEl.textContent = "Loading makes…";
+  const url = "https://vpic.nhtsa.dot.gov/api/vehicles/GetAllMakes?format=json";
+  const data = await fetchJson(url);
 
+  const makes = (data.Results || [])
+    .map(x => x.Make_Name)
+    .filter(Boolean)
+    .sort((a,b)=>a.localeCompare(b));
+
+  statusEl.textContent = `Makes loaded (${makes.length}).`;
+  return makes;
+}
     // Models for a given make+year
     async function loadModels(year, make){
       statusEl.textContent = "Loading models…";
