@@ -88,7 +88,7 @@ small{font-size:12px;color:#666}
 </div>
 
 <script>
-  function fetchWithTimeout(url, ms = 8000){
+  /* LOAD ALL MAKES (STABLE) */  function fetchWithTimeout(url, ms = 8000){
   return Promise.race([
     fetch(url),
     new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
@@ -106,39 +106,7 @@ const statusEl=document.getElementById("status");
 /* YEARS */
 for(let y=2026;y>=2006;y--)yearEl.innerHTML+=`<option>${y}</option>`;
 
-/* LOAD ALL MAKES (STABLE) */
-const FALLBACK_MAKES = [
-  "Acura","Audi","BMW","Buick","Cadillac","Chevrolet","Chrysler","Dodge","Ford","GMC",
-  "Honda","Hyundai","Infiniti","Jeep","Kia","Lexus","Lincoln","Mazda","Mercedes-Benz",
-  "Mini","Mitsubishi","Nissan","Ram","Subaru","Tesla","Toyota","Volkswagen","Volvo"
-];
 
-async function fetchMakesForType(typeName){
-  const url = `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/${encodeURIComponent(typeName)}?format=json`;
-  const r = await fetchWithTimeout(url, 8000);
-  if (!r.ok) throw new Error("Failed: " + typeName);
-  const j = await r.json();
-  return (j.Results || []).map(x => x.MakeName).filter(Boolean);
-}
-
-async function loadMakes(){
-  statusEl.textContent = "Loading auto makes…";
-
-  const types = ["Passenger Car","Truck","Multipurpose Passenger Vehicle (MPV)"];
-
-  try {
-    const lists = await Promise.all(types.map(fetchMakesForType));
-    const set = new Set(lists.flat());
-    const makes = Array.from(set).sort((a,b)=>a.localeCompare(b));
-
-    statusEl.textContent = `Auto makes loaded (${makes.length})`;
-    return makes.length ? makes : FALLBACK_MAKES;
-
-  } catch (e) {
-    statusEl.textContent = "Using backup makes list.";
-    return FALLBACK_MAKES; // ✅ never stuck
-  }
-}
   try {
     // Fetch all types in parallel
     const lists = await Promise.all(types.map(fetchMakesForType));
@@ -181,19 +149,6 @@ function research(){
  const q=[document.getElementById("part").value,yearEl.value,makeEl.value,modelEl.value,document.getElementById("engine").value,document.getElementById("notes").value].filter(Boolean).join(" ");
  window.top.location.href=WP_SEARCH_URL+"?s="+encodeURIComponent(q)+"&post_type=product";
 }
-
-function resetAll(){
- location.reload();
-}window.addEventListener("DOMContentLoaded", async () => {
-  try {
-    makeEl.innerHTML = "<option>Loading…</option>";
-    const makes = await loadMakes();
-    makeEl.innerHTML = "<option value=''>Select make</option>" + makes.map(m => `<option>${m}</option>`).join("");
-    makeEl.disabled = false;
-    statusEl.textContent = "Select year, then make.";
-  } catch {
-    // loadMakes already falls back
-  }
-});</script>
+</script>
 </body>
 </html>
