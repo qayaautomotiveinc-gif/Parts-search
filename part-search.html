@@ -88,43 +88,81 @@ small{font-size:12px;color:#666}
 </div>
 
 <script>
-  /* LOAD ALL MAKES (STABLE) */  function fetchWithTimeout(url, ms = 8000){
-  return Promise.race([
-    fetch(url),
-    new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
-  ]);
-}/* SET YOUR WORDPRESS LINKS HERE */
-const WP_HOME_URL   = "https://qayaautomotiveinc.wordpress.com/";
-const WP_SEARCH_URL = "https://qayaautomotiveinc.wordpress.com/shop/";
+  // ====== GUARANTEED MAKES LOADER (never stuck) ======
+const FALLBACK_MAKES = [
+  "Acura","Audi","BMW","Buick","Cadillac","Chevrolet","Chrysler","Dodge","Ford","GMC",
+  "Honda","Hyundai","Infiniti","Jeep","Kia","Lexus","Lincoln","Mazda","Mercedes-Benz",
+  "Mini","Mitsubishi","Nissan","Ram","Subaru","Tesla","Toyota","Volkswagen","Volvo"
+];
 
-/* ELEMENTS */
-const yearEl=document.getElementById("year");
-const makeEl=document.getElementById("make");
-const modelEl=document.getElementById("model");
-const statusEl=document.getElementById("status");
-
-/* YEARS */
-for(let y=2026;y>=2006;y--)yearEl.innerHTML+=`<option>${y}</option>`;
-
-
+async function fetchJsonWithTimeout(url, ms = 6000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
   try {
-    // Fetch all types in parallel
-    const lists = await Promise.all(types.map(fetchMakesForType));
-
-    // Merge + unique + sort
-    const set = new Set();
-    lists.flat().forEach(m => set.add(m));
-
-    const makes = Array.from(set).sort((a,b)=>a.localeCompare(b));
-    statusEl.textContent = `Auto makes loaded (${makes.length})`;
-    return makes;
-
-  } catch (e) {
-    statusEl.textContent = "Error loading makes.";
-    alert("Could not load makes. Please refresh and try again.");
-    return [];
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return await res.json();
+  } finally {
+    clearTimeout(t);
   }
 }
+
+function fillMakes(makes) {
+  makeEl.innerHTML =
+    "<option value=''>Select make</option>" +
+    makes.map(m => `<option value="${m}">${m}</option>`).join("");
+  makeEl.disabled = false;
+}
+
+async function loadMakesSafe() {
+  statusEl.textContent = "Loading auto makes…";
+
+  // If API is slow/down, we still finish quickly
+  const types = ["Passenger Car", "Truck", "Multipurpose Passenger Vehicle (MPV)"];
+
+  try {
+    const results = await Promise.allSettled(
+      types.map(t =>
+        fetchJsonWithTimeout(
+          `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/${encodeURIComponent(t)}?format=json`,
+          6000
+        )
+      )
+    );
+
+    const set = new Set();
+    for (const r of results) {
+      if (r.status === "fulfilled") {
+        (r.value.Results || []).forEach(x => {
+          if (x && x.MakeName) set.add(x.MakeName);
+        });
+      }
+    }
+
+    const makes = Array.from(set).sort((a,b)=>a.localeCompare(b));
+
+    if (makes.length) {
+      fillMakes(makes);
+      statusEl.textContent = `Makes loaded (${makes.length})`;
+    } else {
+      // If nothing came back, use fallback
+      fillMakes(FALLBACK_MAKES);
+      statusEl.textContent = "Using backup makes list.";
+    }
+  } catch (e) {
+    // Any failure -> fallback (never stuck)
+    fillMakes(FALLBACK_MAKES);
+    statusEl.textContent = "Using backup makes list.";
+  }
+}
+
+// Run on page load
+window.addEventListener("DOMContentLoaded", () => {
+  // Set a visible loading state immediately
+  makeEl.disabled = true;
+  makeEl.innerHTML = "<option>Loading…</option>";
+  loadMakesSafe();
+}); 
 /* EVENTS */
 yearEl.onchange=async()=>{
  makeEl.disabled=true;modelEl.disabled=true;
