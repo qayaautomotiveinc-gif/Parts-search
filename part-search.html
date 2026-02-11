@@ -4,189 +4,222 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Auto Parts Finder</title>
-
 <style>
-:root{font-family:system-ui,Arial,sans-serif}
-body{margin:0;background:#f6f7fb;color:#111}
-.wrap{max-width:980px;margin:24px auto;padding:0 14px}
-.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
-h1{margin:0 0 6px;font-size:22px}
-.sub{margin:0 0 14px;color:#555;font-size:14px}
-.bar{margin:12px 0}
-button{padding:10px 16px;border-radius:10px;border:none;background:#111;color:#fff;font-size:14px;cursor:pointer}
-.grid{display:grid;gap:12px}
-@media(min-width:860px){.grid{grid-template-columns:repeat(4,1fr)}}
-label{display:block;font-size:13px;margin-bottom:6px}
-select,input{width:100%;padding:10px;border-radius:10px;border:1px solid #ccc}
-small{font-size:12px;color:#666}
-.action{grid-column:1/-1}
-.reset{background:#eee;color:#111;margin-top:10px}
+  :root{font-family:system-ui,Arial,sans-serif}
+  body{margin:0;background:#f6f7fb;color:#111}
+  .wrap{max-width:980px;margin:24px auto;padding:0 14px}
+  .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+  h1{margin:0 0 6px;font-size:22px}
+  .sub{margin:0 0 14px;color:#555;font-size:14px}
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0 16px}
+  .btn{padding:10px 16px;border-radius:10px;border:none;font-size:14px;cursor:pointer}
+  .btn-dark{background:#111;color:#fff}
+  .btn-light{background:#eef1f8;color:#111}
+  .grid{display:grid;gap:12px}
+  @media(min-width:860px){.grid{grid-template-columns:repeat(4,1fr)}}
+  label{display:block;font-size:13px;margin:0 0 6px;color:#333}
+  select,input{width:100%;padding:10px;border-radius:10px;border:1px solid #ccc}
+  .wide{grid-column:1/-1}
+  .hint{font-size:12px;color:#666;margin-top:6px}
 </style>
 </head>
 
 <body>
 <div class="wrap">
-<div class="card">
+  <div class="card">
+    <h1>Auto Parts Finder</h1>
+    <div class="sub">Select Year → Make → Model. Add engine size if you know it. Then press Research.</div>
 
-<h1>Auto Parts Finder</h1>
-<div class="sub">Select Year → Make → Model. Add engine size if you know it. Then press Research.</div>
+    <div class="bar">
+      <button class="btn btn-dark" type="button" id="backBtn">⬅ Back to Website</button>
+      <span class="hint" id="status">Ready.</span>
+    </div>
 
-<div class="bar">
-<button onclick="window.top.location.href=WP_HOME_URL">⬅ Back to Website</button>
-<span id="status">Loading…</span>
-</div>
+    <div class="grid">
+      <div>
+        <label for="year">Year</label>
+        <select id="year"></select>
+      </div>
 
-<div class="grid">
-<div>
-<label>Year</label>
-<select id="year"></select>
-</div>
+      <div>
+        <label for="make">Make</label>
+        <select id="make"></select>
+        <div class="hint">Cars only (no equipment).</div>
+      </div>
 
-<div>
-<label>Make</label>
-<select id="make" disabled></select>
-<small>Auto-loaded</small>
-</div>
+      <div>
+        <label for="model">Model</label>
+        <select id="model" disabled>
+          <option value="">Select model</option>
+        </select>
+        <div class="hint">Model list depends on make.</div>
+      </div>
 
-<div>
-<label>Model</label>
-<select id="model" disabled></select>
-<small>Auto-loaded</small>
-</div>
+      <div>
+        <label for="engine">Engine size (optional)</label>
+        <input id="engine" placeholder="Example: 2.4L, 3.5L, 2.0T, Hybrid, EV">
+      </div>
 
-<div>
-<label>Engine size</label>
-<input id="engine" placeholder="2.4L, 3.5L, Hybrid, EV">
-</div>
+      <div>
+        <label for="part">Part</label>
+        <select id="part">
+          <option value="">Select part</option>
+          <option>Brake Pads</option>
+          <option>Brake Rotors</option>
+          <option>Control Arm</option>
+          <option>Wheel Bearing</option>
+          <option>Alternator</option>
+          <option>Starter</option>
+          <option>Battery</option>
+          <option>Radiator</option>
+          <option>Water Pump</option>
+          <option>Spark Plugs</option>
+          <option>Ignition Coils</option>
+          <option>Oil Filter</option>
+          <option>Air Filter</option>
+          <option>Cabin Filter</option>
+          <option>Oxygen Sensor</option>
+          <option>Headlight Bulb</option>
+          <option>Wiper Blades</option>
+        </select>
+      </div>
 
-<div>
-<label>Part</label>
-<select id="part">
-<option value="">Select part</option>
-<option>Brake Pads</option>
-<option>Control Arm</option>
-<option>Alternator</option>
-<option>Battery</option>
-<option>Radiator</option>
-<option>Starter</option>
-<option>Wheel Bearing</option>
-</select>
-</div>
+      <div class="wide">
+        <label for="notes">Extra notes (optional)</label>
+        <input id="notes" placeholder="front/rear, left/right, AWD/FWD, OEM, ceramic…">
+      </div>
 
-<div class="action">
-<label>Extra notes</label>
-<input id="notes" placeholder="front, rear, left, right, OEM">
-</div>
+      <div class="wide bar" style="margin-top:6px;">
+        <button class="btn btn-dark" type="button" id="researchBtn">Research</button>
+        <button class="btn btn-light" type="button" id="resetBtn">Reset</button>
+      </div>
 
-<div class="action">
-<button onclick="research()">Research</button>
-<button class="reset" onclick="resetAll()">Reset</button>
-</div>
-</div>
-
-</div>
+      <div class="wide hint">
+        Tip: Better results happen when your WooCommerce product titles include the part name (example: “Control Arm”, “Brake Pads”).
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-  // ====== GUARANTEED MAKES LOADER (never stuck) ======
-const FALLBACK_MAKES = [
-  "Acura","Audi","BMW","Buick","Cadillac","Chevrolet","Chrysler","Dodge","Ford","GMC",
-  "Honda","Hyundai","Infiniti","Jeep","Kia","Lexus","Lincoln","Mazda","Mercedes-Benz",
-  "Mini","Mitsubishi","Nissan","Ram","Subaru","Tesla","Toyota","Volkswagen","Volvo"
-];
+/* ===============================
+   1) SET YOUR WORDPRESS LINKS HERE
+   =============================== */
+const WP_HOME_URL   = "https://qayaautomotiveinc.wordpress.com/";      // Back button goes here
+const WP_SEARCH_URL = "https://qayaautomotiveinc.wordpress.com/shop/"; // Research goes here (Shop/Parts page)
 
-async function fetchJsonWithTimeout(url, ms = 6000) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return await res.json();
-  } finally {
-    clearTimeout(t);
-  }
-}
-
-function fillMakes(makes) {
-  makeEl.innerHTML =
-    "<option value=''>Select make</option>" +
-    makes.map(m => `<option value="${m}">${m}</option>`).join("");
-  makeEl.disabled = false;
-}
-
-async function loadMakesSafe() {
-  statusEl.textContent = "Loading auto makes…";
-
-  // If API is slow/down, we still finish quickly
-  const types = ["Passenger Car", "Truck", "Multipurpose Passenger Vehicle (MPV)"];
-
-  try {
-    const results = await Promise.allSettled(
-      types.map(t =>
-        fetchJsonWithTimeout(
-          `https://vpic.nhtsa.dot.gov/api/vehicles/GetMakesForVehicleType/${encodeURIComponent(t)}?format=json`,
-          6000
-        )
-      )
-    );
-
-    const set = new Set();
-    for (const r of results) {
-      if (r.status === "fulfilled") {
-        (r.value.Results || []).forEach(x => {
-          if (x && x.MakeName) set.add(x.MakeName);
-        });
-      }
-    }
-
-    const makes = Array.from(set).sort((a,b)=>a.localeCompare(b));
-
-    if (makes.length) {
-      fillMakes(makes);
-      statusEl.textContent = `Makes loaded (${makes.length})`;
-    } else {
-      // If nothing came back, use fallback
-      fillMakes(FALLBACK_MAKES);
-      statusEl.textContent = "Using backup makes list.";
-    }
-  } catch (e) {
-    // Any failure -> fallback (never stuck)
-    fillMakes(FALLBACK_MAKES);
-    statusEl.textContent = "Using backup makes list.";
-  }
-}
-
-// Run on page load
-window.addEventListener("DOMContentLoaded", () => {
-  // Set a visible loading state immediately
-  makeEl.disabled = true;
-  makeEl.innerHTML = "<option>Loading…</option>";
-  loadMakesSafe();
-}); 
-/* EVENTS */
-yearEl.onchange=async()=>{
- makeEl.disabled=true;modelEl.disabled=true;
- makeEl.innerHTML="<option>Loading…</option>";
- const m=await loadMakes();
- makeEl.innerHTML="<option value=''>Select make</option>"+m.map(x=>`<option>${x}</option>`).join("");
- makeEl.disabled=false;
- statusEl.textContent="Makes loaded";
+/* ===============================
+   2) CARS-ONLY MAKE → MODELS LIST
+   (Starter list. Add more anytime.)
+   =============================== */
+const MAKE_MODELS = {
+  "Audi": ["A3","A4","A5","A6","A7","A8","Q3","Q5","Q7","Q8","S3","S4","S5","TT"],
+  "BMW": ["1 Series","2 Series","3 Series","4 Series","5 Series","6 Series","7 Series","X1","X3","X4","X5","X6","X7","Z4"],
+  "Buick": ["Enclave","Encore","Encore GX","Envision","LaCrosse","Regal","Verano"],
+  "Chevrolet": ["Camaro","Corvette","Cruze","Equinox","Impala","Malibu","Silverado 1500","Silverado 2500HD","Spark","Suburban","Tahoe","Traverse","Trax"],
+  "Ford": ["Bronco","Edge","Escape","Explorer","F-150","F-250 Super Duty","Fusion","Mustang","Ranger","Taurus","Transit","Transit Connect"],
+  "GMC": ["Acadia","Canyon","Sierra 1500","Sierra 2500HD","Terrain","Yukon"],
+  "Honda": ["Accord","Civic","CR-V","HR-V","Odyssey","Pilot","Ridgeline"],
+  "Hyundai": ["Elantra","Kona","Palisade","Santa Fe","Sonata","Tucson","Veloster"],
+  "Infiniti": ["Q50","Q60","QX50","QX60","QX80"],
+  "Jeep": ["Cherokee","Compass","Gladiator","Grand Cherokee","Renegade","Wrangler"],
+  "Kia": ["Forte","K5 (Optima)","Niro","Rio","Seltos","Sorento","Soul","Sportage","Telluride"],
+  "Lexus": ["CT","ES","GS","GX","IS","LS","LX","NX","RX","UX"],
+  "Mazda": ["CX-3","CX-30","CX-5","CX-9","Mazda3","Mazda6","MX-5 Miata"],
+  "Mini": ["Clubman","Cooper","Countryman"],
+  "Mitsubishi": ["Eclipse Cross","Lancer","Mirage","Outlander","Outlander Sport (RVR)"],
+  "Nissan": ["Altima","Armada","Frontier","Maxima","Murano","Pathfinder","Rogue","Sentra","Titan","Versa"],
+  "Subaru": ["Ascent","Crosstrek","Forester","Impreza","Legacy","Outback","WRX"],
+  "Tesla": ["Model 3","Model S","Model X","Model Y"],
+  "Toyota": ["4Runner","Avalon","Camry","Corolla","Highlander","Prius","RAV4","Sequoia","Sienna","Tacoma","Tundra","Venza","Yaris"],
+  "Volvo": ["S60","S90","V60","XC40","XC60","XC90"]
 };
 
-makeEl.onchange=async()=>{
- modelEl.disabled=true;
- modelEl.innerHTML="<option>Loading…</option>";
- const models=await loadModels(yearEl.value,makeEl.value);
- modelEl.innerHTML="<option value=''>Select model</option>"+models.map(x=>`<option>${x}</option>`).join("");
- modelEl.disabled=false;
-};
+/* ===============================
+   3) ELEMENTS
+   =============================== */
+const yearEl = document.getElementById("year");
+const makeEl = document.getElementById("make");
+const modelEl = document.getElementById("model");
+const engineEl = document.getElementById("engine");
+const partEl = document.getElementById("part");
+const notesEl = document.getElementById("notes");
+const statusEl = document.getElementById("status");
+const backBtn = document.getElementById("backBtn");
+const researchBtn = document.getElementById("researchBtn");
+const resetBtn = document.getElementById("resetBtn");
 
-/* ACTIONS */
-function research(){
- if(!yearEl.value||!makeEl.value||!modelEl.value){alert("Please select Year, Make, and Model");return;}
- const q=[document.getElementById("part").value,yearEl.value,makeEl.value,modelEl.value,document.getElementById("engine").value,document.getElementById("notes").value].filter(Boolean).join(" ");
- window.top.location.href=WP_SEARCH_URL+"?s="+encodeURIComponent(q)+"&post_type=product";
+backBtn.addEventListener("click", () => window.top.location.href = WP_HOME_URL);
+
+/* Years 2006–2026 */
+yearEl.innerHTML = `<option value="">Select year</option>`;
+for(let y=2026;y>=2006;y--) yearEl.innerHTML += `<option value="${y}">${y}</option>`;
+
+/* Makes */
+const makes = Object.keys(MAKE_MODELS).sort((a,b)=>a.localeCompare(b));
+makeEl.innerHTML = `<option value="">Select make</option>` + makes.map(m=>`<option value="${m}">${m}</option>`).join("");
+
+/* Models change with make */
+makeEl.addEventListener("change", () => {
+  const make = makeEl.value;
+  modelEl.disabled = true;
+  modelEl.innerHTML = `<option value="">Select model</option>`;
+
+  if(!make){
+    statusEl.textContent = "Select a make.";
+    return;
+  }
+
+  const models = MAKE_MODELS[make] || [];
+  modelEl.innerHTML = `<option value="">Select model</option>` + models.map(md=>`<option value="${md}">${md}</option>`).join("");
+  modelEl.disabled = false;
+  statusEl.textContent = `Loaded ${models.length} models for ${make}.`;
+});
+
+/* Research -> WordPress shop search */
+function buildWooSearchUrl(){
+  const year = yearEl.value;
+  const make = makeEl.value;
+  const model = modelEl.value;
+  const engine = engineEl.value.trim();
+  const part = partEl.value;
+  const notes = notesEl.value.trim();
+
+  if(!year || !make || !model){
+    alert("Please select Year, Make, and Model.");
+    return null;
+  }
+  if(!part && !notes){
+    alert("Please select a Part or type extra notes.");
+    return null;
+  }
+
+  // Best WooCommerce search: lead with PART, then vehicle details
+  const phrase = [part, notes, year, make, model, engine].filter(Boolean).join(" ").trim();
+
+  const u = new URL(WP_SEARCH_URL);
+  u.searchParams.set("s", phrase);
+  u.searchParams.set("post_type", "product");
+
+  // optional structured params (useful later)
+  u.searchParams.set("year", year);
+  u.searchParams.set("make", make);
+  u.searchParams.set("model", model);
+  if(engine) u.searchParams.set("engine", engine);
+  if(part) u.searchParams.set("part", part);
+  if(notes) u.searchParams.set("q", notes);
+
+  return u.toString();
 }
+
+researchBtn.addEventListener("click", () => {
+  const url = buildWooSearchUrl();
+  if(!url) return;
+  statusEl.textContent = "Sending you to results…";
+  window.top.location.href = url;
+});
+
+resetBtn.addEventListener("click", () => location.reload());
 </script>
 </body>
 </html>
