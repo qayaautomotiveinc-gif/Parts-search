@@ -7,5 +7,23 @@
   </head>
   <body>
     Redirecting to Parts Search… <a href="part-search.html">Click here</a>
+    <script>
+function searchParts() {
+  const year  = document.getElementById("year").value.trim();
+  const make  = document.getElementById("make").value.trim();
+  const model = document.getElementById("model").value.trim();
+  const part  = document.getElementById("part").value.trim();
+
+  // Build search query
+  const query = [year, make, model, part]
+    .filter(Boolean)
+    .join(" ");
+
+  // Redirect to WordPress search
+  window.location.href =
+    "https://qayaautomotiveinc.wordpress.com/?s=" +
+    encodeURIComponent(query);
+}
+</script>
   </body>
 </html>
