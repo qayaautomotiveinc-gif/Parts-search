@@ -216,10 +216,42 @@ function buildPartsPageUrl(){
   if(part) h.set("part", part);
   if(notes) h.set("notes", notes);
 
-  return WP_PARTS_URL + "#" + h.toString();
+  const jump = sectionFromPart(part);
+
+// anchor first, then keep your hash data
+return WP_PARTS_URL + "#" + (jump ? jump : "") + (jump ? "&" : "") + h.toString();
 }
 researchBtn.addEventListener("click", () => {
-  const url = buildPartsPageUrl();
+  const url = buildPartsPageUrl();function sectionFromPart(part){
+  const p = (part || "").toLowerCase();
+
+  // Body Parts
+  if (/(bumper|hood|fender|door|mirror|grille|headlight|taillight|fog|liftgate|trunk|panel)/.test(p)) {
+    return "body-parts";
+  }
+
+  // Electrical
+  if (/(alternator|starter|battery|ecu|module|sensor|wiring)/.test(p)) {
+    return "electrical";
+  }
+
+  // Brakes
+  if (/(brake|rotor|pad|caliper|abs)/.test(p)) {
+    return "brakes";
+  }
+
+  // Engine / Cooling
+  if (/(engine|motor|radiator|water pump|thermostat|spark|coil|oil filter|air filter|cabin filter)/.test(p)) {
+    return "engine";
+  }
+
+  // Suspension / Steering
+  if (/(control arm|ball joint|tie rod|strut|shock|bearing|cv axle|hub)/.test(p)) {
+    return "suspension";
+  }
+
+  return "";
+}
   if (!url) return;
   statusEl.textContent = "Taking you to parts page…";
   window.location.assign(url); // ✅ force absolute redirect
