@@ -219,9 +219,9 @@ function buildPartsPageUrl(){
   return u.toString();
 }
 researchBtn.addEventListener("click", () => {
-  const url = buildSiteSearchUrl();
+  const url = buildPartsPageUrl();
   if(!url) return;
-  statusEl.textContent = "Sending you to results…";
+  statusEl.textContent = "Taking you to parts page…";
   window.top.location.href = url;
 });
 
