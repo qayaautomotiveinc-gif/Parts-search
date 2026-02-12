@@ -190,7 +190,7 @@ makeEl.addEventListener("change", () => {
 });
 
 /* Research -> WordPress site search (NO WooCommerce required) */
-function buildSiteSearchUrl(){
+function buildPartsPageUrl(){
   const year = yearEl.value;
   const make = makeEl.value;
   const model = modelEl.value;
@@ -207,22 +207,17 @@ function buildSiteSearchUrl(){
     return null;
   }
 
-  const phrase = [part, notes, year, make, model, engine].filter(Boolean).join(" ").trim();
-
-  const u = new URL(WP_SEARCH_URL);
-  u.searchParams.set("s", phrase);
-
-  // Helpful extra parameters (optional)
+  // Build a readable query string (for later use if needed)
+  const u = new URL(WP_PARTS_URL);
   u.searchParams.set("year", year);
   u.searchParams.set("make", make);
   u.searchParams.set("model", model);
   if(engine) u.searchParams.set("engine", engine);
   if(part) u.searchParams.set("part", part);
-  if(notes) u.searchParams.set("q", notes);
+  if(notes) u.searchParams.set("notes", notes);
 
   return u.toString();
 }
-
 researchBtn.addEventListener("click", () => {
   const url = buildSiteSearchUrl();
   if(!url) return;
