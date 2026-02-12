@@ -64,6 +64,8 @@
         <label for="part">Part</label>
         <select id="part">
           <option value="">Select part</option>
+
+          <!-- Mechanical / Maintenance -->
           <option>Brake Pads</option>
           <option>Brake Rotors</option>
           <option>Control Arm</option>
@@ -79,14 +81,27 @@
           <option>Air Filter</option>
           <option>Cabin Filter</option>
           <option>Oxygen Sensor</option>
-          <option>Headlight Bulb</option>
           <option>Wiper Blades</option>
+
+          <!-- ✅ Body Parts (added) -->
+          <option>Front Bumper</option>
+          <option>Rear Bumper</option>
+          <option>Hood</option>
+          <option>Fender</option>
+          <option>Door</option>
+          <option>Side Mirror</option>
+          <option>Grille</option>
+          <option>Headlight</option>
+          <option>Taillight</option>
+          <option>Trunk / Liftgate</option>
+          <option>Rocker Panel</option>
+          <option>Quarter Panel</option>
         </select>
       </div>
 
       <div class="wide">
         <label for="notes">Extra notes (optional)</label>
-        <input id="notes" placeholder="front/rear, left/right, AWD/FWD, OEM, ceramic…">
+        <input id="notes" placeholder="front/rear, left/right, AWD/FWD, OEM, color, VIN…">
       </div>
 
       <div class="wide bar" style="margin-top:6px;">
@@ -95,7 +110,7 @@
       </div>
 
       <div class="wide hint">
-        Tip: Better results happen when your WooCommerce product titles include the part name (example: “Control Arm”, “Brake Pads”).
+        Tip: If you don’t see the exact match, request a quote and include VIN + part position (front/rear, left/right).
       </div>
     </div>
   </div>
@@ -105,12 +120,11 @@
 /* ===============================
    1) SET YOUR WORDPRESS LINKS HERE
    =============================== */
-const WP_HOME_URL   = "https://qayaautomotiveinc.wordpress.com/home/?";      // Back button goes here
-const WP_SEARCH_URL = "https://qayaautomotiveinc.wordpress.com/poducts/"; // Research goes here (Shop/Parts page)
+const WP_HOME_URL   = "https://qayaautomotiveinc.wordpress.com/";          // Back button
+const WP_SEARCH_URL = "https://qayaautomotiveinc.wordpress.com/";          // We'll use WordPress site search (?s=...)
 
 /* ===============================
    2) CARS-ONLY MAKE → MODELS LIST
-   (Starter list. Add more anytime.)
    =============================== */
 const MAKE_MODELS = {
   "Audi": ["A3","A4","A5","A6","A7","A8","Q3","Q5","Q7","Q8","S3","S4","S5","TT"],
@@ -176,8 +190,8 @@ makeEl.addEventListener("change", () => {
   statusEl.textContent = `Loaded ${models.length} models for ${make}.`;
 });
 
-/* Research -> WordPress shop search */
-function buildWooSearchUrl(){
+/* Research -> WordPress site search (NO WooCommerce required) */
+function buildSiteSearchUrl(){
   const year = yearEl.value;
   const make = makeEl.value;
   const model = modelEl.value;
@@ -194,14 +208,12 @@ function buildWooSearchUrl(){
     return null;
   }
 
-  // Best WooCommerce search: lead with PART, then vehicle details
   const phrase = [part, notes, year, make, model, engine].filter(Boolean).join(" ").trim();
 
   const u = new URL(WP_SEARCH_URL);
   u.searchParams.set("s", phrase);
-  u.searchParams.set("post_type", "product");
 
-  // optional structured params (useful later)
+  // Helpful extra parameters (optional)
   u.searchParams.set("year", year);
   u.searchParams.set("make", make);
   u.searchParams.set("model", model);
@@ -213,7 +225,7 @@ function buildWooSearchUrl(){
 }
 
 researchBtn.addEventListener("click", () => {
-  const url = buildWooSearchUrl();
+  const url = buildSiteSearchUrl();
   if(!url) return;
   statusEl.textContent = "Sending you to results…";
   window.top.location.href = url;
