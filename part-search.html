@@ -223,7 +223,7 @@ researchBtn.addEventListener("click", () => {
   const url = buildPartsPageUrl();
   if(!url) return;
   statusEl.textContent = "Taking you to parts page…";
-  window.top.location.href = url;
+  window.location.assign(url);
 });
 
 resetBtn.addEventListener("click", () => location.reload());
