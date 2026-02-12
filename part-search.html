@@ -207,17 +207,18 @@ function buildPartsPageUrl(){
     return null;
   }
 
-  // Build a readable query string (for later use if needed)
-  const u = new URL(WP_PARTS_URL);
-  u.searchParams.set("year", year);
-  u.searchParams.set("make", make);
-  u.searchParams.set("model", model);
-  if(engine) u.searchParams.set("engine", engine);
-  if(part) u.searchParams.set("part", part);
-  if(notes) u.searchParams.set("notes", notes);
+  // ✅ Put details in the HASH so WordPress won’t return 404
+  const h = new URLSearchParams();
+  h.set("year", year);
+  h.set("make", make);
+  h.set("model", model);
+  if(engine) h.set("engine", engine);
+  if(part) h.set("part", part);
+  if(notes) h.set("notes", notes);
 
-  return u.toString();
+  return WP_PARTS_URL + "#" + h.toString();
 }
+
 researchBtn.addEventListener("click", () => {
   const url = buildPartsPageUrl();
   if(!url) return;
