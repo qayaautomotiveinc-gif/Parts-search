@@ -182,14 +182,41 @@ makeEl.addEventListener("change", () => {
     statusEl.textContent = "Select a make.";
     return;
   }
-
   const models = MAKE_MODELS[make] || [];
   modelEl.innerHTML = `<option value="">Select model</option>` + models.map(md=>`<option value="${md}">${md}</option>`).join("");
   modelEl.disabled = false;
   statusEl.textContent = `Loaded ${models.length} models for ${make}.`;
 });
+function sectionFromPart(part){
+  const p = (part || "").toLowerCase();
 
-/* Research -> WordPress site search (NO WooCommerce required) */
+  // Body Parts
+  if (/(bumper|hood|fender|door|mirror|grille|headlight|taillight|fog|liftgate|trunk|panel)/.test(p)) {
+    return "body-parts";
+  }
+
+  // Electrical
+  if (/(alternator|starter|battery|ecu|module|sensor|wiring)/.test(p)) {
+    return "electrical";
+  }
+
+  // Brakes
+  if (/(brake|rotor|pad|caliper|abs)/.test(p)) {
+    return "brakes";
+  }
+
+  // Engine / Cooling
+  if (/(engine|motor|radiator|water pump|thermostat|spark|coil|oil filter|air filter|cabin filter)/.test(p)) {
+    return "engine";
+  }
+
+  // Suspension / Steering
+  if (/(control arm|ball joint|tie rod|strut|shock|bearing|cv axle|hub)/.test(p)) {
+    return "suspension";
+  }
+
+  return "";
+}/* Research -> WordPress site search (NO WooCommerce required) */
 function buildPartsPageUrl(){
   const year = yearEl.value;
   const make = makeEl.value;
@@ -222,41 +249,12 @@ function buildPartsPageUrl(){
 return WP_PARTS_URL + "#" + (jump ? jump : "") + (jump ? "&" : "") + h.toString();
 }
 researchBtn.addEventListener("click", () => {
-  const url = buildPartsPageUrl();function sectionFromPart(part){
-  const p = (part || "").toLowerCase();
-
-  // Body Parts
-  if (/(bumper|hood|fender|door|mirror|grille|headlight|taillight|fog|liftgate|trunk|panel)/.test(p)) {
-    return "body-parts";
-  }
-
-  // Electrical
-  if (/(alternator|starter|battery|ecu|module|sensor|wiring)/.test(p)) {
-    return "electrical";
-  }
-
-  // Brakes
-  if (/(brake|rotor|pad|caliper|abs)/.test(p)) {
-    return "brakes";
-  }
-
-  // Engine / Cooling
-  if (/(engine|motor|radiator|water pump|thermostat|spark|coil|oil filter|air filter|cabin filter)/.test(p)) {
-    return "engine";
-  }
-
-  // Suspension / Steering
-  if (/(control arm|ball joint|tie rod|strut|shock|bearing|cv axle|hub)/.test(p)) {
-    return "suspension";
-  }
-
-  return "";
-}
+  const url = buildPartsPageUrl();
   if (!url) return;
   statusEl.textContent = "Taking you to parts page…";
   window.location.assign(url); // ✅ force absolute redirect
 });
-
+  
 resetBtn.addEventListener("click", () => location.reload());
 </script>
 </body>
