@@ -218,12 +218,11 @@ function buildPartsPageUrl(){
 
   return WP_PARTS_URL + "#" + h.toString();
 }
-
 researchBtn.addEventListener("click", () => {
   const url = buildPartsPageUrl();
-  if(!url) return;
+  if (!url) return;
   statusEl.textContent = "Taking you to parts page…";
-  window.location.assign(url);
+  window.location.assign(url); // ✅ force absolute redirect
 });
 
 resetBtn.addEventListener("click", () => location.reload());
